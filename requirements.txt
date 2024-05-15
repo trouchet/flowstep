@@ -1,0 +1,4 @@
+poetry==1.8.3
+pytest==8.2.0
+uv==0.1.44
+virtualenv==20.26.2
