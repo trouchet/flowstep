@@ -1,0 +1,32 @@
+title;description;level;level_description
+Customizable Prompts;Multiple prompts, formatting options for pause messages;1;Easy
+Restarting;Restart from specific position within iteration;1;Easy
+Bookmarking;Save positions within the flow for later reference;1;Easy
+Search Functionality;Locate specific items within the flow;1;Easy
+Documentation & Examples;Enhanced documentation with explanations, code examples, usage guides;2;Easy-Medium
+Filtering;Include/exclude items based on criteria;2;Easy-Medium
+In-place Modification;Modify items directly within loop (potentially with confirmation prompts);2;Easy-Medium
+Customization;Customizable pause/resume/skip keys, user prompts, message formatting functions;2;Easy-Medium
+Contextual Logging;Include index/item details in log messages;3;Medium
+Dynamic User Input Filtering;Filter items based on real-time user input during iteration;3;Medium
+Serialization/Deserialization;Save/load flow state (paused position, skipped items);3;Medium
+Mapping;Apply custom functions to each item;3;Medium
+Accumulation;Calculate sums, averages during iteration;3;Medium
+Conditional Iteration;Skip/modify items based on conditions within loop;3;Medium
+Test Suite Expansion;Cover new features and edge cases;3;Medium
+Conditional Pausing;Custom functions/lambdas for pausing based on item/loop state;3;Medium
+Callback Functions;Callbacks triggered on specific events (pause, before skip, resume);3;Medium
+Iteration Modes;Configurable iteration modes (continuous, break-on-error, stop-on-skip);3;Medium
+Flexible Timeouts;Timeouts for user input during pause, automatic actions (resume/skip/stop) on timeout;3;Medium
+Advanced Logging;Configurable logging levels, detailed event logging (pause/resume/skip, user input, errors);3;Medium
+Progress Bars (Integration);Explore rich progress bar libraries with sub-tasks and ETA;3;Medium
+Granular Batch Processing;Dynamic batch size, pausing/stopping after each batch;3;Medium
+Flexible Stepping;Forward/backward/n steps, continuous stepping mode with delay;3;Medium
+Conditional Branching;Follow different paths within the flow based on criteria;3;Medium
+Performance Optimization;Optimizations for large datasets/complex conditions (lazy evaluation, batch processing);4;Medium-Hard
+External Data Sources;Integration with databases/APIs for data retrieval/processing within flow;4;Medium-Hard
+Robust Error Handling;Custom exception handling, retry logic with backoff strategies;4;Medium-Hard
+Debugging Tools;Step-over, step-into, breakpoints for easier flow inspection;4;Medium-Hard
+Progress Tracking;Remaining items/ETA, progress bars with customization;4;Medium-Hard
+Merging Flows;Combine processing logic from multiple flow instances;4;Medium-Hard
+Context-Aware Pausing;Integration with external libraries for context monitoring (network/file I/O), automatic pausing/resuming based on context;5;Hard
