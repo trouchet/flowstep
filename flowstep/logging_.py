@@ -6,6 +6,11 @@ from os import getlogin
 log_format = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}"
 
 # Configure the logger
+try:
+    username=getlogin()
+except Exception:
+    username="flowstep"
+
 config = {
     "handlers": [
         {"sink": stdout, "format": log_format, "level": "INFO"},
@@ -19,6 +24,6 @@ config = {
             "diagnose": True,
         },
     ],
-    "extra": {"user": getlogin()},
+    "extra": {"user": username},
 }
 logger.configure(**config)
