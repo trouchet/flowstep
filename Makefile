@@ -1,6 +1,6 @@
 .PHONY: build run stop ps host
 
-OMIT_PATHS := ""
+OMIT_PATHS := "flowstep/examples/*,flowstep/tests/*"
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -55,7 +55,7 @@ install: ## Installs the python requirements. Usage: make install
 	uv pip install -r requirements.txt
 
 test: ## Test the application. Usage: make test
-	poetry run coverage run --rcfile=.coveragerc -m pytest flowstep/
+	poetry run coverage run --rcfile=.coveragerc -m pytest	
 
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
