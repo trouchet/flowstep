@@ -13,7 +13,9 @@ from flowstep.defaults import (
 class TestFlow:
 
     def test_init(self, iterable):
-        skip_condition = lambda x: x % 2 == 0  # Skip even numbers
+        # Skip even numbers
+        def skip_condition(item):
+            return item % 2 == 0
 
         flow = Flow(iterable, skip_condition=skip_condition)
 
@@ -115,7 +117,7 @@ class TestFlow:
         # No specific cleanup needed, so nothing to assert in exit
 
     @patch('builtins.input')  # Mock user input for pause testing
-    def test_pause_no_message(self, mock_input, iterable):
+    def test_pause_no_message_1(self, mock_input, iterable):
         # Simulate user continuing
         mock_input.return_value = "c"
 
@@ -131,7 +133,7 @@ class TestFlow:
         assert next(flow) == (1, 2)  # Move to the second item
 
     @patch('builtins.input')  # Mock user input for pause testing
-    def test_pause_no_message(self, mock_input, iterable):
+    def test_pause_no_message_2(self, mock_input, iterable):
         # Simulate user stop
         mock_input.return_value = "x"
 
@@ -262,7 +264,9 @@ class TestFlow:
             next(flow)
 
     def test_skip_condition(self, iterable):
-        is_even = lambda x: x % 2 == 0
+        def is_even(item):
+            return item % 2 == 0
+
         flow = Flow(iterable, skip_condition=is_even)
         item = next(flow)
 
@@ -316,7 +320,7 @@ class TestFlow:
 
         # Test getting item at specific step
         assert flow._get_item_at_step(1) == (1, 2)
-        assert flow.restart_on_get_item == True
+        assert flow.restart_on_get_item is True
 
     def test_get_item_at_step_out_of_bounds_low(self):
         iterable = ["apple", "banana", "cherry"]

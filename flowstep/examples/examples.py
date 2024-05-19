@@ -40,7 +40,10 @@ class ExampleBatch:
         This test showcases Flow iteration with a custom skip condition on a list.
         """
         iter_list = range(length)
-        skip_condition = lambda x: x > lower and x < upper
+
+        def skip_condition(x: int):
+            return x > lower and x < upper
+
         flow = Flow(iter_list, skip_condition, verbose=True)
         has_pause = True
 

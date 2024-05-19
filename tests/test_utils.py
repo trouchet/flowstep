@@ -1,4 +1,3 @@
-
 from typing import Iterable
 from flowstep.utils import is_sliceable
 
@@ -50,4 +49,4 @@ class TestUtils:
             def __getitem__(self, key):
                 return key
 
-        assert is_sliceable(WithGetItem()) == True
+        assert is_sliceable(WithGetItem()) is True
