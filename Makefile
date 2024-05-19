@@ -48,14 +48,17 @@ replace: ## Replaces a token in the code. Usage: make replace token=your_token
 		--exclude=poetry.lock)
 
 env: ## Creates a virtual environment. Usage: make env
-	pip install uv
-	uv venv
+	pip install virtualenv
+	virtualenv .venv
 
 install: ## Installs the python requirements. Usage: make install
 	uv pip install -r requirements.txt
 
 test: ## Test the application. Usage: make test
 	poetry run coverage run --rcfile=.coveragerc -m pytest	
+
+report: test ## Generate coverage report. Usage: make report
+	coverage report --omit=$(OMIT_PATHS) --show-missing
 
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
@@ -69,7 +72,4 @@ ptw-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep \
     --config pytest.ini --ext=.py \
     --onfail="echo Tests failed, fix the issues"
-
-report: test ## Generate coverage report. Usage: make report
-	coverage report --omit=$(OMIT_PATHS) --show-missing
 
