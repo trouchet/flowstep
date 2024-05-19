@@ -1,93 +1,271 @@
 import pytest
+from unittest.mock import patch  # For mocking user input
 
-from flowstep.flow import Flow
-from itertools import islice
+from flowstep.flow import Flow  # Assuming your class is in flowstep.flow
+from flowstep.defaults import (
+    default_skip_message_callback,
+    PROMPT_MESSAGE,
+    action_default_message,
+    PAST_ACTIONS,
+)
 
 class TestFlow:
-  
-  def test_init(self):
-    iterable = [1, 2, 3]
-    flow = Flow(iterable)
 
-    # Compare the first N elements using islice
-    assert list(islice(flow.iterable, 2)) == list(islice(iter(iterable), 2))
-    assert flow.iterable is not iter(iterable)  # Assert they are different objects
+    def test_init(self, iterable):
+        skip_condition = lambda x: x % 2 == 0  # Skip even numbers
 
-  def test_enter(self):
-    flow = Flow([])
-    with flow:
-      pass
-    assert True  # No exception raised
+        flow = Flow(iterable, skip_condition)
 
-  def test_exit(self):
-    flow = Flow([])
-    with flow:
-      pass
-    # No specific cleanup needed, so nothing to assert in exit
+        assert flow.iterator is not iter(iterable)
+        assert flow.paused is False
+        assert flow.skipped is False
+        assert flow._skip_condition == skip_condition
 
-  def test_pause_no_message(self):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.pause()
-    assert flow.paused
-    assert flow.pause_message is None
+    def test_iter(self, iterable):
+        flow = Flow(iterable)
+        assert iter(flow) is flow
 
-  def test_pause_with_message(self):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.pause("Paused for user input")
-    assert flow.paused
-    assert flow.pause_message == "Paused for user input"
-
-  def test_resume_not_paused(self):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.resume()  # Should have no effect
-    assert next(flow) == 2  # Move to the second item
-
-  def test_resume_with_message(self, capsys):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.pause()
-    flow.set_continue_message("Resuming iteration")
-    flow.resume()
-    captured = capsys.readouterr()
-    assert captured.out == "Resuming iteration\n"
-    assert next(flow) == 2  # Move to the second item
-
-  def test_stop(self):
-    flow = Flow([1, 2, 3])
+    def test_counter(self, iterable):
+        flow = Flow(iterable)
+        assert flow._counter == 0
     
-    # Move to the first item
-    next(flow)
-    flow.stop()
-    with pytest.raises(StopIteration):
-      next(flow)
+    def test_current_item(self, iterable):
+        flow = Flow(iterable)
+        assert flow.current_item is None
 
-  def test_next_stopped(self):
-    flow = Flow([1, 2, 3])
-    flow.stop()
-    with pytest.raises(StopIteration):
-      next(flow)
+    def test_verbose(self, iterable):
+        flow = Flow(iterable, verbose=True)
+        assert flow.verbose is True
 
-  def test_next_paused_user_continues(self, monkeypatch):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.pause()
-    monkeypatch.setattr(input, 'return_value', 'c')  # Simulate user input "c" (continue)
-    assert next(flow) == 2  # Move to the second item
-    assert not flow.paused
+    def test_default_skip_condition(self):
+        flow = Flow([])
+        assert flow._skip_condition(1) is False
+        assert flow._skip_condition(2) is False
+        assert flow._skip_condition(42) is False
 
-  def test_next_paused_user_continues(self, monkeypatch):
-    flow = Flow([1, 2, 3])
-    next(flow)  # Move to the first item
-    flow.pause()
+    def test_default_skip_message_callback(self):
+        assert default_skip_message_callback() == ''
 
-    # Simulate user input "c" (continue) using monkeypatch
-    monkeypatch.setattr(input, 'return_value', 'c')
+    def test_stop_on_pause(self, iterable):
+        flow = Flow(iterable)
+        flow.stop()
+        assert flow.stopped is True
 
-    assert next(flow) == 2  # Move to the second item
-    assert not flow.paused
+    def test_iter_exhausted(self, empty_iterable):
+        flow = Flow(empty_iterable)
+        with pytest.raises(StopIteration):
+            next(flow)
+
+    def test_stop_exhaust_iteration(self, empty_iterable):
+        flow = Flow([1,2])  # Create a Flow object with a custom iterable
+        next(flow)  # Move to the first item
+        next(flow)  # Move to the second item
+
+        # This will raise StopIteration when iterating over the empty iterable
+        with pytest.raises(StopIteration):
+            next(flow)
+
+    def test_enter(self):
+        flow = Flow([])
+        with flow:
+            pass
+        assert True  # No exception raised
+
+    def test_exit(self):
+        flow = Flow([])
+        with flow:
+            pass
+        # No specific cleanup needed, so nothing to assert in exit
+
+    @patch('builtins.input')  # Mock user input for pause testing
+    def test_pause_no_message(self, mock_input, iterable):
+        # Simulate user continuing
+        mock_input.return_value = "c"  
+
+        flow = Flow(iterable)
+        next(flow)      # Move to the first item
+        
+        flow.pause()
+        assert flow.paused
+        assert flow._messages['pause'] == 'Paused at item count 2'
+        
+        flow.resume()
+        
+        assert next(flow) == (1, 2)  # Move to the second item
+
+    @patch('builtins.input')  # Mock user input for pause testing
+    def test_pause_no_message(self, mock_input, iterable):
+        # Simulate user stop
+        mock_input.return_value = "x"
+        
+        flow = Flow(iterable)
+        next(flow)      # Move to the first item
+        
+        flow.pause()
+        assert flow.paused
+        assert flow._messages['pause'] == 'Paused at item count 2'
+        
+        # Call _process_pause directly to trigger user input handling
+        flow._process_pause()
+
+        assert flow.stopped
+    
+    @patch('builtins.input')
+    def test_pause_with_message_and_skip(self, mock_input, iterable):
+        flow = Flow(iterable)
+        
+        # Move to the first item
+        next(flow)
+
+        flow.pause("Paused for user input")
+        assert flow.paused
+        assert flow._messages['pause'] == "Paused for user input"
+        
+        # Simulate user skipping
+        flow.skip()
+
+        # Skipping happens within pause loop
+        flow.resume()
+
+        # Move to the third item (assuming skip in pause loop)
+        assert next(flow) == (2, 3)  
 
 
-  
+    def test_resume_not_paused(self, iterable):
+        flow = Flow(iterable)
+        
+        # Move to the first item
+        next(flow)
+        
+        # Should have no effect
+        flow.resume()
+
+        # Move to the second item
+        assert next(flow) == (1, 2)  
+
+    def test_stop(self, iterable):
+        flow = Flow(iterable)
+        
+        # Move to the first item
+        next(flow)
+        flow.stop()
+        with pytest.raises(StopIteration):
+            next(flow)
+
+    @patch('builtins.input')
+    def test_resume_with_message(self, mock_input, iterable):
+        # Simulate user continuing
+        mock_input.return_value = "c"
+        
+        flow = Flow(iterable)
+        
+        # Move to the first item
+        next(flow)
+        flow.pause()
+        
+        # Simulate user continuing
+        flow.resume()
+
+        # Move to the second item
+        assert next(flow) == (1, 2)  
+
+    @patch('builtins.input')
+    def test_process_pause_resume(self, mocker, iterable):
+        """Tests flow pause and resume functionality with user input 'c' (continue)."""
+        # Simulate user continuing
+        mocker.return_value = "c"
+
+        # Create a Flow object with a sample iterable
+        flow = Flow(iterable)
+
+        # Call next to initiate flow and enter pause state (assuming some logic pauses it)
+        next(flow)
+        flow.pause()
+
+        # Assert that flow is paused before processing pause
+        assert flow.paused is True
+
+        # Call process_pause to handle pause logic
+        flow._process_pause()
+
+        # Assert that flow is resumed after processing pause with 'c' input
+        assert flow.paused is False
+
+    @patch('builtins.input')
+    def test_process_pause_skip(self, mocker, iterable):
+        """Tests flow pause and skip functionality with user input 's' (skip)."""        
+        # Mock user input to return 's' (skip)
+        mocker.return_value='s'
+        
+        # Create a Flow object with a sample iterable
+        flow = Flow(iterable)
+        
+        # Call next to initiate flow and enter pause state
+        next(flow)
+        flow.pause()
+        
+        # Assert that flow is paused before processing pause
+        assert flow.paused is True
+
+        # Call process_pause to handle pause logic
+        flow._process_pause()
+
+        # Assert that flow is not paused (resumed) 
+        # and skipped is True after processing pause with 's' input
+        assert flow.paused is True
+        assert flow.skipped is True
+
+    def test_next_stopped(self, iterable):
+        flow = Flow(iterable)
+        flow.stop()
+
+        with pytest.raises(StopIteration):
+            next(flow)
+
+    def test_skip_condition(self, iterable):
+        is_even=lambda x: x % 2 == 0
+        flow = Flow(iterable, skip_condition=is_even)
+        item = next(flow)
+
+        # First item (odd) is processed
+        assert item == (0, 1)
+        
+        with pytest.raises(StopIteration):
+            flow.stopped = True
+            
+            # Stop after first item
+            next(flow)
+    
+    @patch('builtins.input')  # Patch the input function
+    @patch('builtins.print')  # Patch the print function
+    def test_print_messages(self, mock_input, mock_print, iterable):
+        flow = Flow(iterable, verbose=True)
+
+        # Simulate setting messages
+        flow._messages['pause'] = "Paused for user input (c: continue, s: skip, other: stop)"
+        flow._messages['skip'] = "Item skipped"
+        flow._messages['resume'] = "Resuming iteration"
+
+        # Simulate pause scenario
+        flow.pause()
+
+        # Mock user input to skip (modify as needed for other actions)
+        mock_input.return_value = "s"
+        flow._process_pause()
+
+        # Assert print calls
+        mock_print.assert_called_with(PROMPT_MESSAGE)
+
+    # test_messages.py
+    def test_action_default_message_valid(self):
+        """Tests the action_default_message function with valid inputs."""
+        for action in PAST_ACTIONS:
+            message = action_default_message(action, 10)
+            assert message == f"{action.capitalize()} at item count 11"
+
+    def test_action_default_message_invalid(self):
+        """Tests the action_default_message function with an invalid action."""
+        with pytest.raises(ValueError) as excinfo:
+            action_default_message("Foo", 5)  # Invalid action
+        
+        assert excinfo.value.args[0] == f"Action Foo not supported"

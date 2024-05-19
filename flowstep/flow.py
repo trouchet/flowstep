@@ -1,70 +1,154 @@
-class Flow(object):
-    """
-    Context manager for controlled iteration over an iterable with messages, conditions, and skipping.
+from typing import Iterable, Dict
 
-    Allows pausing, stopping, continuing, and skipping the current item with messages and basic
-    conditions for control flow.
-    """
+from .defaults import (
+    Condition, 
+    default_skip_condition,
+    action_default_message,
+    PROMPT_MESSAGE,
+    IMPERATIVE_ACTIONS,
+)
 
-    def __init__(self, iterable):
-        self.iterable = iter(iterable)
-        self.paused = False
+class Flow:
+    """
+    Provides flow control functionalities for iterables.
+
+    Args:
+        iterable: The iterable to iterate over.
+        messages: Optional dictionary with messages for pause, resume, and skip actions.
+        conditions: Optional function that takes the current item and returns True to skip.
+    """
+    def __init__(
+            self, 
+            iterable: Iterable,  
+            skip_condition: Condition = default_skip_condition,
+            verbose: bool = False
+        ):
+        self.iterator = iter(iterable)
+        
+        self.paused: bool = False
+        self.skipped: bool = False
         self.stopped = False
-        self.pause_message = None       # Optional message to display when paused
-        self.continue_message = None    # Optional message to display when resumed
-        self.skip = False               # Flag to indicate skipping the current item
+        
+        self._messages: Dict = {
+            "pause": None,
+            "resume": None,
+            "skip": None,
+            "stop": None,
+        }
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass  # No specific cleanup needed
-
-    def pause(self, message=None):
-        """Pauses the iteration and optionally sets a message to display."""
-        self.paused = True
-        self.pause_message = message
-
-    def resume(self):
-        """Resumes the iteration if paused and optionally displays a message."""
-        self.paused = False
-        if self.continue_message:
-            print(self.continue_message)
-            self.continue_message = None  # Clear the message after displaying
-
-    def stop(self):
-        """Stops the iteration."""
-        self.stopped = True
+        self._counter: int = 0
+        self.current_item: object = None
+        
+        self._skip_condition = skip_condition
+        
+        self.verbose = verbose
 
     def __iter__(self):
         return self
 
+    def pause(self, message=None):
+        self.paused = True
+        self._messages["pause"] = message if message \
+            else action_default_message('Paused', self._counter)
+        
+
+    def resume(self, message=None):
+        self.paused = False
+        self._messages["resume"] = message if message \
+            else action_default_message('Resumed', self._counter)
+        
+        resume_message = self._messages['resume']
+        if resume_message and self.verbose:
+            print(resume_message)
+
+    def skip(self, message=None):
+        self.skipped = True
+        self._messages["skip"] = message if message \
+            else action_default_message('Skipped', self._counter)
+
+    def stop(self, message=None):
+        self.stopped = True
+        self.paused = False
+        self._messages["stop"] = message if message \
+            else action_default_message('Stopped', self._counter)
+
+    def __print_message(self, action: str, message: str = ''):
+        message = self._messages[action]
+        if message and self.verbose:
+            print(message)
+
+    def __check_skip_condition(self, item: object):
+        if self._skip_condition(item) or self.skipped:
+            self.skipped = False
+            self._counter += 1
+            return self.__next__()
+        else:
+            counter = self._counter
+            self._counter += 1
+            return (counter, item)
+        
+    def _process_pause(self):
+        '''
+        Process the pause state and handle user input
+        
+        The user input is used to determine the next action to take. 
+        It is case-insensitive and can be one of the following:
+        - c: Continue (resume)
+        - s: Skip
+        - Any other key: Stop
+        '''
+
+        self.__print_message('pause')
+
+        # Implement logic for handling pause state
+        user_input = input(PROMPT_MESSAGE).lower()
+        
+        resume_condition = user_input == "c" or user_input == ""
+        skip_condition = user_input == "s"
+        
+        if resume_condition:
+            self.resume()
+            self.__print_message('resume')
+
+        elif skip_condition:
+            self.skip()
+            self.__print_message('skip')
+
+        else:
+            self.stop()
+            self.__print_message('stop')
+        
+        # Clear the messages after handling pause
+        for action in IMPERATIVE_ACTIONS:
+            self._messages[action] = None
+
+
     def __next__(self):
+        """
+        Iterates over the underlying iterable with flow control (pause, skip, stop).
+
+        Raises StopIteration when exhausted or explicitly stopped.
+        Yields elements, skipping based on conditions and user input during pause.
+        """
         if self.stopped:
             raise StopIteration
+        
         while self.paused:
-            if self.pause_message:
-                print(self.pause_message)
+            self._process_pause()
+        
+        # Verify if provided 
+        if self.stopped:
+            raise StopIteration
+
+        try:
+            item = next(self.iterator)
+            return self.__check_skip_condition(item)
             
-            # Implement logic for handling pause state (e.g., wait for user input)
-            user_input = input("Continue (c), Skip (s), or Stop (any other key): ").lower()
-            if user_input == "c":
-                self.resume()
-            elif user_input == "s":
-                self.skip = True  # Set flag to skip the current item
-                break
-            else:
-                self.stop()
-                break
-            self.pause_message = None  # Clear the message after handling pause
-            self.skip = False  # Reset skip flag after handling
+        except StopIteration:
+            raise
 
-        if self.skip:
-            self.skip = False  # Reset skip flag for next iteration
-            return next(self.iterable)  # Move to the next item after skipping
-
-        return next(self.iterable)
-
-    def set_continue_message(self, message):
-        """Sets a message to display when resuming the iteration."""
-        self.continue_message = message
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
