@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch  # For mocking user input
 
-from flowstep.flow import Flow  # Assuming your class is in flowstep.flow
+from flowstep.flow import Flow
 from flowstep.defaults import (
     default_skip_message_callback,
     PROMPT_MESSAGE,
@@ -15,7 +15,7 @@ class TestFlow:
     def test_init(self, iterable):
         skip_condition = lambda x: x % 2 == 0  # Skip even numbers
 
-        flow = Flow(iterable, skip_condition)
+        flow = Flow(iterable, skip_condition=skip_condition)
 
         assert flow.iterator is not iter(iterable)
         assert flow.paused is False
@@ -54,6 +54,42 @@ class TestFlow:
 
     def test_iter_exhausted(self, empty_iterable):
         flow = Flow(empty_iterable)
+        with pytest.raises(StopIteration):
+            next(flow)
+    
+    @patch('flowstep.flow.Flow._get_user_input')
+    def test_flow_pause_and_stop(self, mocker, iterable):
+        flow = Flow(iterable)
+        
+        mocker.return_value = 'c'  # Stop the flow
+
+        # Simulate first iteration
+        item = next(flow)
+        assert item == (0, 1)  # First item
+
+        # Pause the flow
+        flow.pause()
+
+        # Verify stopped flag is not set yet
+        assert not flow.stopped
+
+        # Mock wouldn't trigger loop exit, process pause manually
+        flow._process_pause()
+
+        # Verify flow is resumed after user input ("resume")
+        assert not flow.paused
+
+        # Iterate again and check next item
+        item = next(flow)
+        assert item == (1, 2)  # Second item
+
+        # Stop the flow explicitly
+        flow.stop()
+
+        # Verify stopped flag is set
+        assert flow.stopped
+
+        # Raise StopIteration on further iteration
         with pytest.raises(StopIteration):
             next(flow)
 
@@ -110,6 +146,9 @@ class TestFlow:
         flow._process_pause()
 
         assert flow.stopped
+
+        with pytest.raises(StopIteration):
+            next(flow)
 
     @patch('builtins.input')
     def test_pause_with_message_and_skip(self, mock_input, iterable):
@@ -271,3 +310,24 @@ class TestFlow:
             action_default_message("Foo", 5)  # Invalid action
 
         assert excinfo.value.args[0] == "Action Foo not supported"
+
+    def test_get_item_at_step_success(self, iterable):
+        flow = Flow(iterable)
+        
+        # Test getting item at specific step
+        assert flow._get_item_at_step(1) == (1, 2)
+        assert flow.restart_on_get_item == True
+
+    def test_get_item_at_step_out_of_bounds_low(self):
+        iterable = ["apple", "banana", "cherry"]
+        flow = Flow(iterable)
+
+        with pytest.raises(ValueError):
+            flow._get_item_at_step(-1)
+
+    def test_get_item_at_step_out_of_bounds_high(self):
+        iterable = ["apple", "banana", "cherry"]
+        flow = Flow(iterable)
+
+        with pytest.raises(ValueError):
+            flow._get_item_at_step(4)
