@@ -15,6 +15,7 @@ class ExampleBatch:
             print(f"\n** Test: {func.__name__} **")
             print(f"{func.__doc__}")
             func(*args, **kwargs)
+
         return wrapper
 
     @_test_wrapper

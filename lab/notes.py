@@ -2,7 +2,7 @@ from json import load
 import pandas as pd
 from os import getcwd, path
 
-filename=path.join(getcwd(), 'lab', 'TODO.json')
+filename = path.join(getcwd(), 'lab', 'TODO.json')
 with open(filename) as f:
     data = load(f)
 

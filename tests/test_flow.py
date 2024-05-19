@@ -56,11 +56,11 @@ class TestFlow:
         flow = Flow(empty_iterable)
         with pytest.raises(StopIteration):
             next(flow)
-    
+
     @patch('flowstep.flow.Flow._get_user_input')
     def test_flow_pause_and_stop(self, mocker, iterable):
         flow = Flow(iterable)
-        
+
         mocker.return_value = 'c'  # Stop the flow
 
         # Simulate first iteration
@@ -313,7 +313,7 @@ class TestFlow:
 
     def test_get_item_at_step_success(self, iterable):
         flow = Flow(iterable)
-        
+
         # Test getting item at specific step
         assert flow._get_item_at_step(1) == (1, 2)
         assert flow.restart_on_get_item == True

@@ -28,7 +28,7 @@ class Flow:
         verbose: bool = False,
         restart_on_get_item: bool = True,
     ):
-        self.total = len(list(iterable)) if total is None else total 
+        self.total = len(list(iterable)) if total is None else total
         self.iterator = iter(iterable)
 
         self.paused: bool = False
@@ -176,15 +176,15 @@ class Flow:
         for i in range(steps):
             try:
                 self.__next__()
-            
+
             except StopIteration:
                 # We don't need to raise it here, as the loop will terminate
                 pass
 
             except Exception as e:
-                error_message=f"Error fast-forwarding the iterator at index {i}: {e}"
+                error_message = f"Error fast-forwarding the iterator at index {i}: {e}"
                 logger.error(error_message)
-    
+
     def _get_item_at_step(self, step: int):
         """
         Retrieves the item at a specific step within the iterator by advancing it.
@@ -201,7 +201,7 @@ class Flow:
             ValueError: If the requested step is outside the valid range.
         """
         # Check bounds using temporary list
-        if step < self._counter or step >= self.total:  
+        if step < self._counter or step >= self.total:
             raise ValueError("Requested step is outside the valid range.")
 
         # Reset the iterator to the target step
@@ -210,12 +210,12 @@ class Flow:
 
         # Get the item at the target step
         item = self.__next__()
-        
+
         # Optionally reset the iterator and counter for restart after processing
         if self.restart_on_get_item:
             self.iterator = iter(self.iterator)
             self.fast_forward(counter_value)
-        
+
         return item
 
     def __enter__(self):

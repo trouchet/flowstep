@@ -1,7 +1,7 @@
-import pytest
 
 from typing import Iterable
 from flowstep.utils import is_sliceable
+
 
 class TestUtils:
     def test_is_sliceable_list(self):
@@ -32,19 +32,22 @@ class TestUtils:
         """
         Test if a custom class without __getitem__ is not sliceable.
         """
+
         class NoGetItem:
             pass
+
         assert is_sliceable(NoGetItem()) is False
 
     def test_is_sliceable_custom_class_with_getitem(self):
         """
         Test if a custom class with __getitem__ is sliceable.
         """
+
         class WithGetItem(Iterable):
             def __iter__(self):
                 return iter([1, 2, 3])
-            
+
             def __getitem__(self, key):
                 return key
-    
+
         assert is_sliceable(WithGetItem()) == True
