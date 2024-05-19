@@ -1,5 +1,11 @@
 # Flowstep
 
+[![Version](https://img.shields.io/pypi/v/flowstep.svg)](https://pypi.python.org/pypi/flowstep)
+[![downloads](https://img.shields.io/pypi/dm/flowstep)](https://pypi.org/project/flowstep/)
+
+[![codecov](https://codecov.io/gh/trouchet/flowstep/branch/main/graph/badge.svg?token=PJMBaLIqar)](https://codecov.io/gh/trouchet/flowstep)
+[![Lint workflow](https://github.com/trouchet/flowstep/actions/workflows/check-lint.yaml/badge.svg)](https://github.com/trouchet/flowstep/actions/workflows/check-lint.yaml)
+
 Flowstep is a Python library that provides enhanced control flow functionalities for iterating over iterables. It allows you to pause, resume, skip, or stop the iteration process based on conditions and user interaction.
 
 ## Key Features:
