@@ -63,8 +63,7 @@ jobs:
       #----------------------------------------------
       - name: Run tests and generate coverage
         run: |
-          poetry run pytest --cov=eule tests/
-          # Uncomment when achieve sufficient coverage threshold
+          poetry run coverage run --rcfile=.coveragerc -m pytest	
           poetry run coverage report -m
       #----------------------------------------------
       #       Update codecov coverage
