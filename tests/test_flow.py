@@ -9,6 +9,7 @@ from flowstep.defaults import (
     PAST_ACTIONS,
 )
 
+
 class TestFlow:
 
     def test_init(self, iterable):
@@ -28,7 +29,7 @@ class TestFlow:
     def test_counter(self, iterable):
         flow = Flow(iterable)
         assert flow._counter == 0
-    
+
     def test_current_item(self, iterable):
         flow = Flow(iterable)
         assert flow.current_item is None
@@ -57,7 +58,7 @@ class TestFlow:
             next(flow)
 
     def test_stop_exhaust_iteration(self, empty_iterable):
-        flow = Flow([1,2])  # Create a Flow object with a custom iterable
+        flow = Flow([1, 2])  # Create a Flow object with a custom iterable
         next(flow)  # Move to the first item
         next(flow)  # Move to the second item
 
@@ -80,47 +81,47 @@ class TestFlow:
     @patch('builtins.input')  # Mock user input for pause testing
     def test_pause_no_message(self, mock_input, iterable):
         # Simulate user continuing
-        mock_input.return_value = "c"  
+        mock_input.return_value = "c"
 
         flow = Flow(iterable)
-        next(flow)      # Move to the first item
-        
+        next(flow)  # Move to the first item
+
         flow.pause()
         assert flow.paused
         assert flow._messages['pause'] == 'Paused at item count 2'
-        
+
         flow.resume()
-        
+
         assert next(flow) == (1, 2)  # Move to the second item
 
     @patch('builtins.input')  # Mock user input for pause testing
     def test_pause_no_message(self, mock_input, iterable):
         # Simulate user stop
         mock_input.return_value = "x"
-        
+
         flow = Flow(iterable)
-        next(flow)      # Move to the first item
-        
+        next(flow)  # Move to the first item
+
         flow.pause()
         assert flow.paused
         assert flow._messages['pause'] == 'Paused at item count 2'
-        
+
         # Call _process_pause directly to trigger user input handling
         flow._process_pause()
 
         assert flow.stopped
-    
+
     @patch('builtins.input')
     def test_pause_with_message_and_skip(self, mock_input, iterable):
         flow = Flow(iterable)
-        
+
         # Move to the first item
         next(flow)
 
         flow.pause("Paused for user input")
         assert flow.paused
         assert flow._messages['pause'] == "Paused for user input"
-        
+
         # Simulate user skipping
         flow.skip()
 
@@ -128,24 +129,23 @@ class TestFlow:
         flow.resume()
 
         # Move to the third item (assuming skip in pause loop)
-        assert next(flow) == (2, 3)  
-
+        assert next(flow) == (2, 3)
 
     def test_resume_not_paused(self, iterable):
         flow = Flow(iterable)
-        
+
         # Move to the first item
         next(flow)
-        
+
         # Should have no effect
         flow.resume()
 
         # Move to the second item
-        assert next(flow) == (1, 2)  
+        assert next(flow) == (1, 2)
 
     def test_stop(self, iterable):
         flow = Flow(iterable)
-        
+
         # Move to the first item
         next(flow)
         flow.stop()
@@ -156,18 +156,18 @@ class TestFlow:
     def test_resume_with_message(self, mock_input, iterable):
         # Simulate user continuing
         mock_input.return_value = "c"
-        
+
         flow = Flow(iterable)
-        
+
         # Move to the first item
         next(flow)
         flow.pause()
-        
+
         # Simulate user continuing
         flow.resume()
 
         # Move to the second item
-        assert next(flow) == (1, 2)  
+        assert next(flow) == (1, 2)
 
     @patch('builtins.input')
     def test_process_pause_resume(self, mocker, iterable):
@@ -193,24 +193,24 @@ class TestFlow:
 
     @patch('builtins.input')
     def test_process_pause_skip(self, mocker, iterable):
-        """Tests flow pause and skip functionality with user input 's' (skip)."""        
+        """Tests flow pause and skip functionality with user input 's' (skip)."""
         # Mock user input to return 's' (skip)
-        mocker.return_value='s'
-        
+        mocker.return_value = 's'
+
         # Create a Flow object with a sample iterable
         flow = Flow(iterable)
-        
+
         # Call next to initiate flow and enter pause state
         next(flow)
         flow.pause()
-        
+
         # Assert that flow is paused before processing pause
         assert flow.paused is True
 
         # Call process_pause to handle pause logic
         flow._process_pause()
 
-        # Assert that flow is not paused (resumed) 
+        # Assert that flow is not paused (resumed)
         # and skipped is True after processing pause with 's' input
         assert flow.paused is True
         assert flow.skipped is True
@@ -223,26 +223,28 @@ class TestFlow:
             next(flow)
 
     def test_skip_condition(self, iterable):
-        is_even=lambda x: x % 2 == 0
+        is_even = lambda x: x % 2 == 0
         flow = Flow(iterable, skip_condition=is_even)
         item = next(flow)
 
         # First item (odd) is processed
         assert item == (0, 1)
-        
+
         with pytest.raises(StopIteration):
             flow.stopped = True
-            
+
             # Stop after first item
             next(flow)
-    
+
     @patch('builtins.input')  # Patch the input function
     @patch('builtins.print')  # Patch the print function
     def test_print_messages(self, mock_input, mock_print, iterable):
         flow = Flow(iterable, verbose=True)
 
         # Simulate setting messages
-        flow._messages['pause'] = "Paused for user input (c: continue, s: skip, other: stop)"
+        flow._messages['pause'] = (
+            "Paused for user input (c: continue, s: skip, other: stop)"
+        )
         flow._messages['skip'] = "Item skipped"
         flow._messages['resume'] = "Resuming iteration"
 
@@ -267,5 +269,5 @@ class TestFlow:
         """Tests the action_default_message function with an invalid action."""
         with pytest.raises(ValueError) as excinfo:
             action_default_message("Foo", 5)  # Invalid action
-        
-        assert excinfo.value.args[0] == f"Action Foo not supported"
+
+        assert excinfo.value.args[0] == "Action Foo not supported"

@@ -1,5 +1,5 @@
 from json import load
-import pandas as pd 
+import pandas as pd
 
 with open('TODO.json') as f:
     data = load(f)
@@ -14,18 +14,18 @@ tasks = {
 }
 
 difficulty_level = {
-    'Easy': 1, 
-    'Easy-Medium': 2, 
-    'Medium': 3, 
+    'Easy': 1,
+    'Easy-Medium': 2,
+    'Medium': 3,
     'Medium-Hard': 4,
-    'Hard': 5
+    'Hard': 5,
 }
 
 for task in data['tasks']:
     tasks['title'].append(task['title'])
     tasks['description'].append(task['description'])
-    
-    level_description=task['level']
+
+    level_description = task['level']
     tasks['level_description'].append(level_description)
     tasks['level'].append(difficulty_level[level_description])
 
