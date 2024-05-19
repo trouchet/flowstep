@@ -66,10 +66,30 @@ minimal-requirements: ## Generates minimal requirements. Usage: make requirement
 lint: ## perform inplace lint fixes
 	black --skip-string-normalization .
 	ruff check --fix .
-	find . -name "*.py" -exec autopep8 --in-place --aggressive --aggressive {} \;
 
 ptw-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep \
     --config pytest.ini --ext=.py \
     --onfail="echo Tests failed, fix the issues"
 
+check-bump: # check if bump version is valid
+	@if [ "$(v)" != "patch" ] && [ "$(v)" != "minor" ] && [ "$(v)" != "major" ]; then \
+		echo "Invalid input for 'v': $(v). Please use 'patch', 'minor', or 'major'."; \
+		exit 1; \
+	fi; \
+
+bump: ## bump version to user-provided {patch|minor|major} semantic
+	@$(MAKE) check-bump v=$(v)
+	poetry version $(v)
+	git add pyproject.toml
+	git commit -m "release/ tag v$$(poetry version -s)"
+	git tag "v$$(poetry version -s)"
+	git push
+	git push --tags
+	poetry version
+
+publish: clean ## build source and publish package
+	poetry publish --build
+
+release: bump v=$(v) ## release package on PyPI
+	$(MAKE) -C publish
