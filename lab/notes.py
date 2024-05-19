@@ -1,7 +1,9 @@
 from json import load
 import pandas as pd
+from os import getcwd, path
 
-with open('TODO.json') as f:
+filename=path.join(getcwd(), 'lab', 'TODO.json')
+with open(filename) as f:
     data = load(f)
 
 set(map(lambda x: x['level'], data['tasks']))
@@ -34,4 +36,4 @@ tasks_df = pd.DataFrame(tasks)
 tasks_df.sort_values(by='level', inplace=True)
 tasks_df.reset_index(drop=True, inplace=True)
 
-tasks_df.to_csv('TODO.csv', index=False)
+tasks_df.to_csv('TODO.csv', index=False, sep=';')

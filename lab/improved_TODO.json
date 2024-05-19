@@ -1,0 +1,116 @@
+{
+    "features": {
+      "essential_for_most_projects": {
+        "description": "These features provide core functionalities for managing flow control and user interaction.",
+        "easy": [
+          {
+            "title": "Customizable Prompts",
+            "description": "Allows defining different messages for pause, resume, and skip actions, along with formatting options."
+          },
+          {
+            "title": "Restarting",
+            "description": "Enables restarting the flow from a specific position within the iteration."
+          }
+        ],
+        "medium": [
+          {
+            "title": "Conditional Pausing",
+            "description": "Introduces custom functions or lambdas to pause the flow based on item content or loop state."
+          },
+          {
+            "title": "Progress Tracking",
+            "description": "Displays remaining items, estimated time to completion (ETA), or progress bars with customization options."
+          },
+          {
+            "title": "Flexible Stepping",
+            "description": "Allows forward/backward/n-step movement within the flow, with an option for continuous stepping mode with a delay between items."
+          },
+          {
+            "title": "Iteration Modes",
+            "description": "Offers configurable modes like continuous, break-on-error, or stop-on-skip."
+          },
+          {
+            "title": "Customization",
+            "description": "Allows customizing pause/resume/skip keys, user prompts, and message formatting functions."
+          }
+        ]
+      },
+      "features_for_more_complex_projects": {
+        "description": "These features are valuable for projects handling large datasets, complex conditions, or requiring more granular control.",
+        "medium": [
+          {
+            "title": "Granular Batch Processing",
+            "description": "Enables dynamic batch size control and pausing/stopping after each batch for memory management or resource-intensive operations."
+          },
+          {
+            "title": "Advanced Logging",
+            "description": "Provides configurable logging levels and detailed event logging (pause/resume/skip, user input, errors) for debugging and monitoring."
+          },
+          {
+            "title": "Flexible Timeouts",
+            "description": "Sets timeouts for user input during pauses, with automatic actions (resume/skip/stop) after timeout to prevent stalls."
+          },
+          {
+            "title": "Callback Functions",
+            "description": "Allows triggering custom logic at specific events (pause, before skip, resume) for advanced flow control."
+          },
+          {
+            "title": "Conditional Iteration",
+            "description": "Enables skipping or modifying items based on conditions within the loop for selective processing or data transformation."
+          },
+          {
+            "title": "In-place Modification",
+            "description": "Allows direct modification of items within the loop (potentially with confirmation prompts) for data transformation within the flow (use with caution)."
+          },
+          {
+            "title": "Mapping",
+            "description": "Provides functionality to apply custom functions to each item as it's processed for data manipulation."
+          },
+          {
+            "title": "Accumulation",
+            "description": "Helps calculate sums, averages, or other aggregations during iteration for summarizing data while processing the flow."
+          }
+        ],
+        "medium_hard": [
+          {
+            "title": "Robust Error Handling",
+            "description": "Implements custom exception handling logic, including retry attempts with backoff strategies for handling unexpected errors and preventing failures."
+          },
+          {
+            "title": "Context-Aware Pausing",
+            "description": "Integrates with external libraries for context monitoring (network/file I/O). This allows automatic pausing/resuming based on external conditions like network availability or disk space."
+          },
+          {
+            "title": "Performance Optimization",
+            "description": "Optimizes performance for large datasets or complex conditions through techniques like lazy evaluation and batch processing to improve efficiency."
+          }
+        ]
+      },
+      "features_for_highly_specialized_projects": {
+        "description": "These features cater to highly specialized projects with unique requirements or integrations with external systems.",
+        "medium_hard": [
+          {
+            "title": "External Data Sources",
+            "description": "Allows integration with databases/APIs for data retrieval and processing within the flow."
+          },
+          {
+            "title": "Serialization/Deserialization",
+            "description": "Enables saving and loading flow state (paused position, skipped items) for resuming later."
+          },
+          {
+            "title": "Dynamic User Input Filtering",
+            "description": "Filters items based on real-time user input during iteration for interactive processing."
+          }
+        ],
+        "hard": [
+          {
+            "title": "Contextual Pausing",
+            "description": "Offers the most advanced context-aware pausing behavior based on real-time factors through integration with external libraries."
+          },
+          {
+            "title": "Conditional Branching",
+            "description": "Allows defining different processing paths within the flow based on criteria for complex decision-making."
+          }
+        ]
+      }
+    }
