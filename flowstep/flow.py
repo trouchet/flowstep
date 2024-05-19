@@ -173,7 +173,7 @@ class Flow:
             raise
 
     def fast_forward(self, steps: int):
-        for _ in range(steps):
+        for i in range(steps):
             try:
                 self.__next__()
             
@@ -182,7 +182,8 @@ class Flow:
                 pass
 
             except Exception as e:
-                logger.error(f"Error fast-forwarding the iterator: {e}")
+                error_message=f"Error fast-forwarding the iterator at index {i}: {e}"
+                logger.error(error_message)
     
     def _get_item_at_step(self, step: int):
         """
