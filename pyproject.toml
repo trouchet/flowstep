@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flowstep"
-version = "0.0.1"
+version = "0.0.0"
 description = "Manages individual steps within a flow."
 authors = ["Bruno Peixoto <brunolnetto@gmail.com>"]
 license = "MIT"
